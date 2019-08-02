@@ -6,12 +6,21 @@ R에서 Load
   boston <- read.table("c:/Users/USER/housing.data")
   
   install.packages("tibble")
-  install.packages("pillar")
   install.packages("dplyr")
   
   names(boston) <- c('crim','zn','indus','chas','nox','rm','age','dis','rad',
                    'tax','ptratio','black','lstat','mdev')
+  ## Row Data 출력
   glimpse(boston)
   
-  sessionInfo()
+  ## 도표 출력
+  plot(boston)
   
+  ## 통계 평균값 출력
+  summary(boston)
+
+  ## glimpse() 함수에서 Error 발생
+  sessionInfo()
+
+  ## pillar package 설치, dplyr package 재설치 후 Error Clear
+  install.packages("pillar")

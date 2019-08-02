@@ -1,0 +1,17 @@
+curl을 통해 website에서 Download
+  curl https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.data > housing.data
+  curl https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.names > housing.names
+  
+R에서 Load
+  boston <- read.table("c:/Users/USER/housing.data")
+  
+  install.packages("tibble")
+  install.packages("pillar")
+  install.packages("dplyr")
+  
+  names(boston) <- c('crim','zn','indus','chas','nox','rm','age','dis','rad',
+                   'tax','ptratio','black','lstat','mdev')
+  glimpse(boston)
+  
+  sessionInfo()
+  

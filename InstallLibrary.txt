@@ -1,0 +1,23 @@
+CRAN ( The Comprehensive R Archive Network )
+  - R과 관련된 코드와 문서를 관리하는 웹서버 네트워크
+CRAN Task View
+  - R 사용자들이 개발된 패키지를 영역별로 모아놓은 페이지 
+    (https://cran.r-project.org/web/views/) 
+  
+
+View 별로 설치할 수 있다.
+  install.packages("ctv")
+  library(ctv)
+
+  # 머신러닝과 관련된 모든 패키지를 설치한다. 
+  install.views("MachineLearning")
+
+라이브러리를 Load 하지않고 Package 함수/데이터를 바로 사용할 수 있다.
+  library(dplyr)
+  glimpse(iris)
+  
+  library(gapminder)
+  gapminder
+  
+  dplyr::glimpse(iris)
+  gapminder::gapminder

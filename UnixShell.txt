@@ -1,0 +1,15 @@
+
+# 데이터를 Download한다.
+  $ curl https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data > adult.data
+  
+# 콤마 열 분리문자를 탭으로 바꾼 후 다른 파일에 저장
+  $ tr "," "\t" < adult.data > adult.data.tab
+  
+# 1. 콤마를 기준으로 두 번째 열(직업군)을 잘라내서 
+  2. 알파벳 순서로 정렬 후
+  3. 각 줄이 얼마나 등장했는지 카운트
+  4. 등장 횟수를 역으로 정렬
+  
+  $ cut -d ',' -f 2 < adult.data | sort | uniq -c | sort -nr
+  
+  

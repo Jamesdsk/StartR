@@ -1,26 +1,131 @@
 curl을 통해 website에서 Download
-  curl https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.data > housing.data
-  curl https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.names > housing.names
+  $ curl https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.data > housing.data
+  $ curl https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.names > housing.names
   
 R에서 Load
-  boston <- read.table("c:/Users/USER/housing.data")
+  #### 파일에서 읽어 들일 때
+  >boston <- read.table("c:/Users/USER/housing.data")
   
-  install.packages("tibble")
-  install.packages("dplyr")
+  >install.packages("tibble")
+  >install.packages("dplyr")
   
-  names(boston) <- c('crim','zn','indus','chas','nox','rm','age','dis','rad',
+  >names(boston) <- c('crim','zn','indus','chas','nox','rm','age','dis','rad',
                    'tax','ptratio','black','lstat','mdev')
   ## Row Data 출력
-  glimpse(boston)
+  >glimpse(boston)
   
   ## 도표 출력
-  plot(boston)
+  >plot(boston)
   
   ## 통계 평균값 출력
-  summary(boston)
+  >summary(boston)
 
   ## glimpse() 함수에서 Error 발생
-  sessionInfo()
+  >glimpse(boston)
+  Error: 'vec_dim' is not an exported object from 'namespace:vctrs'
 
-  ## pillar package 설치, dplyr package 재설치 후 Error Clear
-  install.packages("pillar")
+  ## pillar package 설치
+  ## dplyr package 재설치 후 정상 
+  >install.packages("pillar")
+
+  #### 아주 큰 파일을 읽어 들일 때
+  >library(data.table)
+  >DT <- fread("very_big.csv")
+  >DT <- fread("very_big.csv",data.table=FALSE)
+  
+  #### 엑셀 파일을 읽어 들일 때
+  >library(readxl)
+  
+  >read_excel("my-old-spreadsheet.xls")
+  >read_excel("my-new-spreadsheet.xlsx")
+  
+  ## 여러 시트가 있을 경우 특정 시트를 지정
+  >read_excel("my-spreadsheet.xls",sheet="data")
+  >read_excel("my-spreadsheet.xls",sheet=2)
+  
+  ## 결측치가 빈 셀이 아닌 다른 문자로 코드되어 있을 경우
+  >read_excel("my-spreadsheet.xls",na="NA")
+  
+  #### SQL 연습
+  >library(sqldf)
+  
+  >sqldf("select * from iris")
+      Sepal.Length Sepal.Width Petal.Length Petal.Width    Species
+  1            5.1         3.5          1.4         0.2     setosa
+  2            4.9         3.0          1.4         0.2     setosa
+  3            4.7         3.2          1.3         0.2     setosa
+  4            4.6         3.1          1.5         0.2     setosa
+  5            5.0         3.6          1.4         0.2     setosa
+  6            5.4         3.9          1.7         0.4     setosa
+  :
+  
+  > sqldf("select count(*) from iris")
+  count(*)
+  1      150
+  
+  >sqldf("select Species, count(*), avg(`Sepal.Length`)
+      from iris
+      group by `Species`")
+        Species count(*) avg(`Sepal.Length`)
+  1     setosa       50               5.006
+  2 versicolor       50               5.936
+  3  virginica       50               6.588
+  
+  >sqldf("select Species, `Sepal.Length`, `Sepal.Width`
+      from iris
+      where `Sepal.Length` < 4.5
+      order by `Sepal.Width`")
+  
+     Species Sepal.Length Sepal.Width
+  1  setosa          4.4         2.9
+  2  setosa          4.3         3.0
+  3  setosa          4.4         3.0
+  4  setosa          4.4         3.2
+  
+  #### DB에서 데이터 읽어 들일 때
+  > install.packages("ROracle")
+  Package which is only available in source form, and may need compilation of
+    C/C++/Fortran: ‘ROracle’
+  installing the source package ‘ROracle’
+
+  trying URL 'https://cran.rstudio.com/src/contrib/ROracle_1.3-1.tar.gz'
+  Content type 'application/x-gzip' length 308252 bytes (301 KB)
+  downloaded 301 KB
+
+  * installing *source* package 'ROracle' ...
+  ** 패키지 'ROracle'는 성공적으로 압축해제되었고, MD5 sums 이 확인되었습니다
+  ** using staged installation
+  ERROR: cannot find Oracle Client.
+         Please set OCI_LIB64 to specify its location.
+  ERROR: configuration failed for package 'ROracle'
+  * removing 'C:/Program Files/R/R-3.6.0/library/ROracle'
+  Warning in install.packages :
+    installation of package ‘ROracle’ had non-zero exit status
+
+  The downloaded source packages are in
+	  ‘C:\Users\USER\AppData\Local\Temp\RtmpeofCmJ\downloaded_packages’
+  
+  ## Oracle Client 프로그램이 설치되어 있어야 함.
+  
+  > install.packages("RMySQL")
+  trying URL 'https://cran.rstudio.com/bin/windows/contrib/3.6/RMySQL_0.10.17.zip'
+  Content type 'application/zip' length 3195904 bytes (3.0 MB)
+  downloaded 3.0 MB
+
+  package ‘RMySQL’ successfully unpacked and MD5 sums checked
+
+  The downloaded binary packages are in
+	  C:\Users\USER\AppData\Local\Temp\RtmpeofCmJ\downloaded_packages
+
+  > install.packages("RPostgreSQL")
+  trying URL 'https://cran.rstudio.com/bin/windows/contrib/3.6/RPostgreSQL_0.6-2.zip'
+  Content type 'application/zip' length 496645 bytes (485 KB)
+  downloaded 485 KB
+
+  package ‘RPostgreSQL’ successfully unpacked and MD5 sums checked
+
+  The downloaded binary packages are in
+	  C:\Users\USER\AppData\Local\Temp\RtmpeofCmJ\downloaded_packages
+  
+  
+  

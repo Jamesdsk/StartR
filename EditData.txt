@@ -90,3 +90,156 @@
   9           4.4         2.9          1.4         0.2  setosa
   10          4.9         3.1          1.5         0.1  setosa
   > 
+  
+  ## 행을 선택하는 filter (조건문)
+  > filter(gapminder, country=='Korea, Rep.')
+  > gapminder %>% filter(country=='Korea, Rep.')
+  # A tibble: 12 x 6
+    country     continent  year lifeExp      pop gdpPercap
+    <fct>       <fct>     <int>   <dbl>    <int>     <dbl>
+  1 Korea, Rep. Asia       1952    47.5 20947571     1031.
+  2 Korea, Rep. Asia       1957    52.7 22611552     1488.
+  3 Korea, Rep. Asia       1962    55.3 26420307     1536.
+  4 Korea, Rep. Asia       1967    57.7 30131000     2029.
+  
+  > gapminder %>% filter(year==2007)
+  > gapminder %>% filter(country=='Korea, Rep.', year==2007)
+  
+  ## 행을 정렬하는 arrange
+  > arrange(gapminder, year, country)
+  > gapminder %>% arrange(year, country)
+  # A tibble: 1,704 x 6
+    country     continent  year lifeExp      pop gdpPercap
+    <fct>       <fct>     <int>   <dbl>    <int>     <dbl>
+  1 Afghanistan Asia       1952    28.8  8425333      779.
+  2 Albania     Europe     1952    55.2  1282697     1601.
+  3 Algeria     Africa     1952    43.1  9279525     2449.
+  4 Angola      Africa     1952    30.0  4232095     3521.
+  5 Argentina   Americas   1952    62.5 17876956     5911.
+  6 Australia   Oceania    1952    69.1  8691212    10040.
+  7 Austria     Europe     1952    66.8  6927772     6137.
+  8 Bahrain     Asia       1952    50.9   120447     9867.
+  9 Bangladesh  Asia       1952    37.5 46886859      684.
+  10 Belgium     Europe     1952    68    8730405     8343.
+  # ... with 1,694 more rows
+
+  ## 열(변수)를 선택하는 select
+  > select(gapminder, pop, gdpPercap)
+  > gapminder %>% select(pop, gdpPercap)
+  # A tibble: 1,704 x 2
+          pop gdpPercap
+        <int>     <dbl>
+  1  8425333      779.
+  2  9240934      821.
+  3 10267083      853.
+  4 11537966      836.
+  5 13079460      740.
+  6 14880372      786.
+  7 12881816      978.
+  8 13867957      852.
+  9 16317921      649.
+  10 22227415      635.
+  # ... with 1,694 more rows
+
+  ## 변수를 변환하는 mutate
+  > gapminder %>%
+  +   mutate(total_gdp = pop * gdpPercap,
+  +          le_gdp_ratio = lifeExp / gdpPercap,
+  +          lgrk = le_gdp_ratio * 100)
+  # A tibble: 1,704 x 9
+     country     continent  year lifeExp      pop gdpPercap    total_gdp le_gdp_ratio  lgrk
+     <fct>       <fct>     <int>   <dbl>    <int>     <dbl>        <dbl>        <dbl> <dbl>
+  1 Afghanistan Asia       1952    28.8  8425333      779.  6567086330.       0.0370  3.70
+  2 Afghanistan Asia       1957    30.3  9240934      821.  7585448670.       0.0370  3.70
+  3 Afghanistan Asia       1962    32.0 10267083      853.  8758855797.       0.0375  3.75
+  4 Afghanistan Asia       1967    34.0 11537966      836.  9648014150.       0.0407  4.07
+  5 Afghanistan Asia       1972    36.1 13079460      740.  9678553274.       0.0488  4.88
+  6 Afghanistan Asia       1977    38.4 14880372      786. 11697659231.       0.0489  4.89
+  7 Afghanistan Asia       1982    39.9 12881816      978. 12598563401.       0.0408  4.08
+  8 Afghanistan Asia       1987    40.8 13867957      852. 11820990309.       0.0479  4.79
+  9 Afghanistan Asia       1992    41.7 16317921      649. 10595901589.       0.0642  6.42
+  10 Afghanistan Asia       1997    41.8 22227415      635. 14121995875.       0.0657  6.57
+  # ... with 1,694 more rows
+  
+  ## 요약 통계량을 계산하는 summarize
+  > gapminder %>%
+  +   summarize(n_obs = n(),
+  +             n_countries = n_distinct(country),
+  +             n_year = n_distinct(year),
+  +             med_gdpc = median(gdpPercap),
+  +             max_gdppc = max(gdpPercap))
+  # A tibble: 1 x 5
+    n_obs n_countries n_year med_gdpc max_gdppc
+    <int>       <int>  <int>    <dbl>     <dbl>
+  1  1704         142     12    3532.   113523.
+  
+  ## 랜덤 샘플을 위한 sample_n, sample_frac
+  > sample_n(gapminder, 10)
+  # A tibble: 10 x 6
+     country        continent  year lifeExp      pop gdpPercap
+     <fct>          <fct>     <int>   <dbl>    <int>     <dbl>
+   1 Austria        Europe     1952    66.8  6927772     6137.
+   2 Belgium        Europe     1992    76.5 10045622    25576.
+   3 United Kingdom Europe     1952    69.2 50430000     9980.
+   4 Somalia        Africa     1997    43.8  6633514      931.
+   5 Taiwan         Asia       1972    69.4 15226039     4063.
+   6 Iran           Asia       1992    65.7 60397973     7236.
+   7 Finland        Europe     1982    74.6  4826933    18533.
+   8 Belgium        Europe     1967    70.9  9556500    13149.
+   9 Belgium        Europe     1987    75.4  9870200    22526.
+  10 Guinea-Bissau  Africa     1992    43.3  1050938      746.
+  > sample_frac(gapminder, 0.01)
+  # A tibble: 17 x 6
+     country                  continent  year lifeExp       pop gdpPercap
+     <fct>                    <fct>     <int>   <dbl>     <int>     <dbl>
+   1 Italy                    Europe     1987    76.4  56729703    19207.
+   2 Bolivia                  Americas   1997    62.0   7693188     3326.
+   3 Guinea                   Africa     1997    51.5   8048834      869.
+   4 Central African Republic Africa     1992    49.4   3265124      748.
+   5 Portugal                 Europe     1957    61.5   8817650     3775.
+   6 Paraguay                 Americas   1972    65.8   2614104     2523.
+   7 Slovak Republic          Europe     2007    74.7   5447502    18678.
+   8 Nepal                    Asia       1952    36.2   9182536      546.
+   9 Somalia                  Africa     1997    43.8   6633514      931.
+  10 Ethiopia                 Africa     1957    36.7  22815614      379.
+  11 Morocco                  Africa     1977    55.7  18396941     2371.
+  12 Indonesia                Asia       1987    60.1 169276000     1748.
+  13 Bangladesh               Asia       1982    50.0  93074406      677.
+  14 Hong Kong, China         Asia       1962    67.6   3305200     4693.
+  15 Vietnam                  Asia       1957    42.9  28998543      676.
+  16 Bulgaria                 Europe     2007    73.0   7322858    10681.
+  17 Nicaragua                Americas   1972    55.2   2182908     4689.
+  
+  ## 고유한 행을 찾아내는 distinct
+  > distinct(select(gapminder, country))
+  > gapminder %>% select(country) %>% distinct
+  # A tibble: 142 x 1
+     country    
+     <fct>      
+   1 Afghanistan
+   2 Albania    
+   3 Algeria    
+   4 Angola     
+   5 Argentina  
+   6 Australia  
+   7 Austria    
+   8 Bahrain    
+   9 Bangladesh 
+  10 Belgium    
+  # ... with 132 more rows
+  
+  ## group_by를 이용한 그룹 연산
+  > gapminder %>%
+  +   filter(year==2007) %>%
+  +   group_by(continent) %>%
+  +   summarize(median(lifeExp))
+  # A tibble: 5 x 2
+    continent `median(lifeExp)`
+    <fct>                 <dbl>
+  1 Africa                 52.9
+  2 Americas               72.9
+  3 Asia                   72.4
+  4 Europe                 78.6
+  5 Oceania                80.7
+  
+  

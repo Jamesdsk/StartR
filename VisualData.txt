@@ -39,5 +39,129 @@
   보통 관측치 개수가 일곱 개 이상이면 필수적으로 시각화를 해야한다. 
   - 일반인이 작업기억공간에 담아둘 수 있는 정보의 양은 7±2 이다 ( 밀러의 법칙 )
   
+  # R 베이스 시각화 함수
+  plot(x,y): 산점도
+  hist(x): 히스토그램
+  boxplot(x): 상자그림
+  mosaicplot(): 모자익 플롯
+  points(x,y): 저차원 점 그리는 함수
+  lines(x,y): 저차원 선 그리는 함수
+
+  ## ggplot을 이용한 시각화
+  > library(ggplot2)
+  > gapminder %>% ggplot(aes(x=lifeExp)) + geom_histogram()
+  > gapminder %>% ggplot(aes(x=gdpPercap)) + geom_histogram()
+  > gapminder %>% ggplot(aes(x=gdpPercap)) + geom_histogram() + scale_x_log10()
+  > gapminder %>% ggplot(aes(x=gdpPercap,y=lifeExp)) + geom_point() +
+      scale_x_log10() + geom_smooth()
   
+  aes() 명령은 변수를 그래프 구성요소에 매핑해준다.
+    ex) 히스토그램의 x축으로 gapminder$lifeExp 변수를 사용하라
+  > gapminder %>% ggplot(aes(x=lifeExp)) + geom_histogram()
+  `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+  geom_histogram(bins=30)처럼 히스토그램의 막대 개수를 지정해줄 수 있음을 말해준다.
+
+  ggplot2는 R의 시각화 라이브러리이다. 'grammar of graphics'의 두 g를 따서 ggplot이라 이름 지었다.
   
+  > example(ggplot)
+  
+  # gp: 벡터 'a','b','c'를 생성하고 10번씩 반복 'a','a',...,'a','b',...,'b','c',...,'c'
+  # y : 랜덤 숫자 30개를 생성
+  df <- data.frame(
+    gp = factor(rep(letters[1:3], each = 10)),
+    y = rnorm(30)
+  )
+  > glimpse(df)
+  Observations: 30
+  Variables: 2
+  $ gp <fct> a, a, a, a, a, a, a, a, a, a, b, b, b, b, b, b, b, b, b, b, c, c, c, c, c, c, c, c,...
+  $ y  <dbl> -0.20273776, 0.13794335, 0.28644860, -0.59346927, -0.64837481, -0.37018884, -0.8903...
+
+  # gp변수의 각 그룹별로 y변수의 평균과 표준편차를 계산한다.
+  ds <- do.call(rbind, lapply(split(df, df$gp), function(d) {
+    data.frame(mean = mean(d$y), sd = sd(d$y), gp = d$gp)
+  }))
+  > glimpse(ds)
+  Observations: 30
+  Variables: 3
+  $ mean <dbl> -0.3121909, -0.3121909, -0.3121909, -0.3121909, -0.3121909, -0.3121909, -0.312190...
+  $ sd   <dbl> 0.4553002, 0.4553002, 0.4553002, 0.4553002, 0.4553002, 0.4553002, 0.4553002, 0.45...
+  $ gp   <fct> a, a, a, a, a, a, a, a, a, a, b, b, b, b, b, b, b, b, b, b, c, c, c, c, c, c, c, ...
+
+  # geom_point()는 data=, aes= 이 없으면 ggplot()에서 정의된 것들을 사용한다.
+  > ggplot(df, aes(gp, y)) +
+      geom_point() +
+      geom_point(data = ds, aes(y = mean), colour = 'red', size = 3)
+
+  # ggplot()은 단지 데이터 세트만 지정해 준다. x,y 매핑은 각 레이어 geom_point()에서 지정한다.
+  > ggplot(df) +
+      geom_point(aes(gp, y)) +
+      geom_point(data = ds, aes(gp, mean), colour = 'red', size = 3)
+
+  # ggplot()은 골격만 제공해 준다. 이후에 각 레이어가 자체적으로 data=와 aes=의 맵핑을 정의한다.      
+  > ggplot() +
+      geom_point(data = df, aes(gp, y)) +
+      geom_point(data = ds, aes(gp, mean), colour = 'red', size = 3) +
+      geom_errorbar(
+        data = ds,
+        aes(gp, mean, ymin = mean - sd, ymax = mean + sd),
+        colour = 'red',
+        width = 0.4
+      )
+
+  # 파이프 연산자(%>%)를 사용한 ggplot
+  ggplot(gapminder, aes(lifeExp)) + geom_histogram()
+  gapminder %>% ggplot(aes(lifeExp)) + geom_histogram()
+
+  # 변수는 수량형 변수(평균수명, 키, 몸무게)와 범주형 변수(국가, 성별)로 구분된다.
+
+  # 히스토그램, 도수폴리곤, 분포밀도추정함수를 해석할 때는 다음을 살펴본다.
+    1. 이상점은 없는가?
+    2. 전반적 분포의 모양은 어떤가? 종모양인가, 오른쪽으로 치우쳤는가, 왼쪽으로 치우쳤는가, 두 개의 피크를 가졌는가?
+    3. 어떤 변환을 하면 데이터가 종모양에 가까워지는가?
+    4. 히스토그램이 너무 자세하거나 거칠지 않은가? 그럴 경우에는 다양한 binwidth= 값을 사용해본다.
+
+  ## 한개 수량형 변수
+  # 히스토그램
+  > gapminder %>% ggplot(aes(x=gdpPercap)) + geom_histogram()
+  # 로그변환한 히스토그램
+  > gapminder %>% ggplot(aes(x=gdpPercap)) + geom_histogram() + scale_x_log10()
+  # 도수폴리곤
+  > gapminder %>% ggplot(aes(x=gdpPercap)) + geom_freqpoly() + scale_x_log10()
+  # 커널밀도 추정함수
+  > gapminder %>% ggplot(aes(x=gdpPercap)) + geom_density() + scale_x_log10()
+
+  ## 한개 범주형 변수
+  범주형 변수의 시각화는 막대그래프가 유일하다. table() 함수를 통한 통계량을 바로 출력해주는 것도 좋다.
+
+  # 도수분포 막대그래프
+  > diamonds %>% ggplot(aes(cut)) + geom_bar()
+  
+  # 도수 분포
+  > table(diamonds$cut) 
+
+       Fair      Good Very Good   Premium     Ideal 
+       1610      4906     12082     13791     21551 
+  # 상대 도수 
+  > prop.table(table(diamonds$cut))
+
+        Fair       Good  Very Good    Premium      Ideal 
+  0.02984798 0.09095291 0.22398962 0.25567297 0.39953652 
+  # 퍼센트
+  > round(prop.table(table(diamonds$cut))*100,1)
+
+       Fair      Good Very Good   Premium     Ideal 
+        3.0       9.1      22.4      25.6      40.0 
+  > diamonds %>%
+  +   group_by(cut) %>%
+  +   tally() %>%
+  +   mutate(pct = round(n /sum(n) * 100,1))
+  # A tibble: 5 x 3
+    cut           n   pct
+    <ord>     <int> <dbl>
+  1 Fair       1610   3  
+  2 Good       4906   9.1
+  3 Very Good 12082  22.4
+  4 Premium   13791  25.6
+  5 Ideal     21551  40  
+

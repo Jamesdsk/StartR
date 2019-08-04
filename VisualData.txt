@@ -1,0 +1,43 @@
+#### 수리적 데이터 탐색
+  > head(gapminder)
+  > tail(gapminder)
+  > glimpse(gapminder)
+  > gapminder$lifeExp
+  > gapminder$gdpPercap
+  > gapminder[, c('lifeExp','gdpPercap')] 
+  > gapminder %>% select(gdpPercap, lifeExp)
+  > summary(gapminder$lifeExp)
+  > summary(gapminder$gdpPercap)
+  
+  # 두 변수의 상관계수 (correlation) 
+  > cor(gapminder$lifeExp, gapminder$gdpPercap)
+  [1] 0.5837062
+  
+#### 시각적 데이터 탐색
+  # 그래프 출력 영역 지정
+  > opar = par(mfrow=c(2,2))
+  
+  # 막대 그래프로 표시
+  > hist(gapminder$lifeExp)
+  > hist(gapminder$gdpPercap,nclass=50)
+  > hist(log10(gapminder$gdpPercap),nclass=50)
+  
+  # 상관관계 그래프, cex는 점의 크기
+  > plot(log10(gapminder$gdpPercap),gapminder$lifeExp, cex=.5)
+  
+  # 그래프 영역 해제
+  > par(opar)
+  
+  # 로그로 변환한 변수와의 상관계수  
+  > cor(gapminder$lifeExp,log10(gapminder$gdpPercap))
+  [1] 0.8076179
+  
+  # cor()의 method
+  default: method='pearson'(피어슨 상관계수) - 변수의 관계가 직선인 선형 관계를 측정
+  method='kendall', method='spearman' - 변수의 관계가 비선형일 경우
+  
+  보통 관측치 개수가 일곱 개 이상이면 필수적으로 시각화를 해야한다. 
+  - 일반인이 작업기억공간에 담아둘 수 있는 정보의 양은 7±2 이다 ( 밀러의 법칙 )
+  
+  
+  

@@ -165,3 +165,61 @@
   4 Premium   13791  25.6
   5 Ideal     21551  40  
 
+  ## 두개의 수량형 변수
+    1. 데이터의 개수가 너무 많을 떄는 천 여 개 정도의 점들을 표본화 한다.
+    2. 데이터의 개수가 너무 많을 때는 alpha= 값을 줄여서 점들을 좀 더 투명하게 만들어본다.
+    3. 일변량 데이터의 예처럼 x나 y변수에 제곱근 혹은 로그 변환이 필요한지 살펴본다.
+    4. 데이터의 상관관계가 강한지 혹은 약한지 살펴본다.
+    5. 데이터의 관계가 선형인지 혹은 비선형인지 살펴본다.
+    6. 이상점이 있는지 살펴본다.
+    7. X,Y 변수가 변수간의 인과 관계를 반영하는지 생각해본다. 한 변수가 다른 변수에 영향을 미치는
+       자연스러운 관계가 있다면 원인이 되는 변수를 X로, 결과가 되는 변수를 Y로 놓는 것이 자연스럽다.
+
+  > diamonds %>% ggplot(aes(carat, price)) + geom_point()
+  # 데이터가 너무 많아서 alpha값을 줄였다.
+  > diamonds %>% ggplot(aes(carat, price)) + geom_point(alpha=0.01)
+  
+  > mpg %>% ggplot(aes(cyl, hwy)) + geom_point()
+  # 중복된 관측치가 있어서 geom_jitter()를 사용하여 조금 흩어준다. 
+  > mpg %>% ggplot(aes(cyl, hwy)) + geom_jitter()  
+
+  # 두개 이상의 연속 변수를 다룰때는 산점도 행렬이 효과적이다.
+  > pairs(diamonds %>% sample_n(1000))
+
+
+  ## 수량형 변수와 범주형 변수
+  # X를 설명변수(범주형) Y를 반응변수(수량형)로 설정한다.
+  > mpg %>% ggplot(aes(class, hwy)) + geom_boxplot()
+
+  # 추가 탐색
+    1. 각 class 그룹의 관측치는 얼마나 될까?
+    2. 클래스 변수의 순서는 기본적인 순서와 다르게 할 수 는 없을까?
+    3. unique(mpg$class) 함수를 실행해보면 class 변수의 다른 값들을 알 수 있다.
+    4. 범주형 변수의 레이블이 너무 길어질 경우에는 x-y축을 바꿔주는 것이 보기 쉽다.
+
+  # geom_jitter를 통해 중복 관측치가 겹쳐 보이는 것을 피했다. 
+  # geom_boxplot레이이를 alpha를 이용해 반투명하게 표시했다.
+  > mpg %>% ggplot(aes(class, hwy)) + geom_jitter(col='green') +
+      geom_boxplot(alpha=0.5)
+
+  # reorder 명령을 사용하여 class함수를 각 그룹에서 hwy변수의 중간값의 올림차순으로
+  # 범주를 정해주었다.
+  > mpg %>% mutate(class=reorder(class,hwy,median)) %>%
+      ggplot(aes(class, hwy)) + geom_jitter(col='green') +
+      geom_boxplot(alpha=.5)
+  
+  # factor()의 levels함수를 이용하여 범주의 순서를 지정해 주었다.
+  > mpg %>%
+      mutate(class=factor(class, levels=
+                        c("2seater","subcompact","compact","midsize",
+                          "minivan","suv","pickup"))) %>%
+      ggplot(aes(class,hwy)) + geom_jitter(col='green') +
+      geom_boxplot(alpha=.5)
+
+  # coord_flip() 함수를 사용하여 y축이 가로로 나타나게 해주었다.
+  > mpg %>%
+      mutate(class=factor(class, levels=
+                        c("2seater","subcompact","compact","midsize",
+                          "minivan","suv","pickup"))) %>%
+      ggplot(aes(class,hwy)) + geom_jitter(col='green') +
+      geom_boxplot(alpha=.5) + coord_flip()

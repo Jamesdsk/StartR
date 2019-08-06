@@ -198,7 +198,7 @@
     4. 범주형 변수의 레이블이 너무 길어질 경우에는 x-y축을 바꿔주는 것이 보기 쉽다.
 
   # geom_jitter를 통해 중복 관측치가 겹쳐 보이는 것을 피했다. 
-  # geom_boxplot레이이를 alpha를 이용해 반투명하게 표시했다.
+  # geom_boxplot 레이어의 alpha를 이용해 반투명하게 표시했다.
   > mpg %>% ggplot(aes(class, hwy)) + geom_jitter(col='green') +
       geom_boxplot(alpha=0.5)
 
@@ -223,3 +223,192 @@
                           "minivan","suv","pickup"))) %>%
       ggplot(aes(class,hwy)) + geom_jitter(col='green') +
       geom_boxplot(alpha=.5) + coord_flip()
+
+
+  # 병령상자그림을 사용할 때 주의점
+  1. 범주형 x변수의 적절한 순서를 고려한다. reorder() 명령처럼 통계량에 기반을 둔
+    범주의 순서를 정할 수도 있고, factor(levels=) 명령을 사용하여 수동으로 정하는
+    것이 나을 수도 있다.
+  2. 수량형 y변수의 제곱근과 로그변환이 도움이 될 수 있다.
+  3. 수량형 y변수의 분포가 어떠한가? 종모양인가? 왼쪽 혹은 오른쪽으로 치우쳐 있는가?
+    이상점이 있는가?
+  4. 각 x범주 그룹의 관측치는 충분한가. 이것을 알아내기 위해서는 alpha= 옵션으로 
+    반투명 상자를 그리고, geom_points()로 개별 관측치를 표현해보자
+  5. x와 y축을 교환할 필요는 없는가? cood_flip() 함수를 사용한다.
+  6. 유용한 차트를 얻기 위해서는 다양한 옵션을 시도해야 한다. 반복적이고 점진적으로 
+    차트를 개선해나간다.
+
+  ## 두개의 범주형 변수
+  # 도수 분포는 xtabs(), 시각화는 mosaicplot()을 사용한다.
+  > glimpse(data.frame(Titanic))
+  Observations: 32
+  Variables: 5
+  $ Class    <fct> 1st, 2nd, 3rd, Crew, 1st, 2nd, 3rd, Crew, 1st, 2nd, 3rd, Crew, 1st, 2nd, 3rd,...
+  $ Sex      <fct> Male, Male, Male, Male, Female, Female, Female, Female, Male, Male, Male, Mal...
+  $ Age      <fct> Child, Child, Child, Child, Child, Child, Child, Child, Adult, Adult, Adult, ...
+  $ Survived <fct> No, No, No, No, No, No, No, No, No, No, No, No, No, No, No, No, Yes, Yes, Yes...
+  $ Freq     <dbl> 0, 0, 35, 0, 0, 0, 17, 0, 118, 154, 387, 670, 4, 13, 89, 3, 5, 11, 13, 0, 1, ...
+
+  > xtabs(Freq ~ Class + Sex + Age + Survived, data.frame(Titanic))
+  , , Age = Child, Survived = No
+
+        Sex
+  Class  Male Female
+    1st     0      0
+    2nd     0      0
+    3rd    35     17
+    Crew    0      0
+
+  , , Age = Adult, Survived = No
+
+        Sex
+  Class  Male Female
+    1st   118      4
+    2nd   154     13
+    3rd   387     89
+    Crew  670      3
+
+  , , Age = Child, Survived = Yes
+
+        Sex
+  Class  Male Female
+    1st     5      1
+    2nd    11     13
+    3rd    13     14
+    Crew    0      0
+
+  , , Age = Adult, Survived = Yes
+
+        Sex
+  Class  Male Female
+    1st    57    140
+    2nd    14     80
+    3rd    75     76
+    Crew  192     20
+
+  > mosaicplot(Titanic, main="Survival on the Titanic")
+  > mosaicplot(Titanic, main="Survival on the Titanic", color=TRUE)
+
+  > apply(Titanic, c(3,4), sum)
+         Survived
+  Age       No Yes
+    Child   52  57
+    Adult 1438 654
+  > round(prop.table(apply(Titanic,c(3,4),sum), margin=1),3)
+         Survived
+  Age        No   Yes
+    Child 0.477 0.523
+    Adult 0.687 0.313
+  > apply(Titanic, c(2,4), sum)
+          Survived
+  Sex        No Yes
+    Male   1364 367
+    Female  126 344
+  > round(prop.table(apply(Titanic,c(2,4),sum), margin=1),3)
+          Survived
+  Sex         No   Yes
+    Male   0.788 0.212
+    Female 0.268 0.732
+
+  > t2 = data.frame(Titanic)
+  > t2 %>% group_by(Sex) %>%
+  +   summarize(n=sum(Freq),
+  +             survivors=sum(ifelse(Survived=="Yes", Freq, 0))) %>%
+  +   mutate(rate_survival=survivors/n)
+  # A tibble: 2 x 4 
+    Sex        n survivors rate_survival
+    <fct>  <dbl>     <dbl>         <dbl>
+  1 Male    1731       367         0.212
+  2 Female   470       344         0.732
+
+
+  # 변수가 2개가 넘어가면 크게 둘 중 하나의 기법을 사용한다.
+  1. geom_ 레이어에 색깔, 모양, 선모양 등의 다른 속성을 더해준다.
+     그 새로운 속성, 혹은 속성들을 제3, 제4의 변수를 나타내는 데 사용하면 된다.
+  2. 플롯을 세번째, 네번째 변수의 각 범주별로 나열하는 방법이다.
+
+  # 2007년도 평균소득과 기대 수명과의 관계
+  > gapminder %>% filter(year==2007) %>%
+  +   ggplot(aes(gdpPercap, lifeExp)) +
+  +   geom_point() + scale_x_log10() +
+  +   ggtitle("Gapminder data for 2007")
+
+  # 대륙과 인구수 변수도 나타낸다.
+  # 대륙은 소수의 레벨을 가진 범주형 변수이고 인구수는 크기를 나타내는 수량형 변수이다.
+  # 범주형 변수는 색깔로, 수량형 변수는 점 크기로 나타내는 것이 자연스럽다.
+  > gapminder %>% filter(year==2007) %>%
+  +   ggplot(aes(gdpPercap, lifeExp)) +
+  +   geom_point(aes(size=pop, col=continent)) + scale_x_log10() +
+  +   ggtitle("Gapminder data for 2007")
+
+  # 국가별 평균 기대 수명의 연도별 추이
+  # group= 속성을 매핑하면 주어진 변수별로 선이 그어지는 geom_line() 레이어가 추가된다. 
+  > gapminder %>%
+  +   ggplot(aes(year, lifeExp, group=country)) +
+  +   geom_line()
+
+  # 대륙별 정보를 색깔 속성에 맵핑한다.
+  > gapminder %>%
+  +   ggplot(aes(year, lifeExp, group=country, col=continent)) +
+  +   geom_line()
+
+  # facet_wrap() 함수를 이용해 각 대륙별로 별개의, 같은 규격의 플롯을 그린다.
+  > gapminder %>%
+  +   ggplot(aes(year, lifeExp, group=country)) +
+  +   geom_line() +
+  +   facet_wrap(~ continent)
+
+  ## 시각화의 기본적 과정
+  1. 데이터에 대한 설명을 읽는다. 문맥을 파악한다.
+  2. glimpse() 함수로 데이터 구조를 파악한다. 행의 개수는? 변수의 타입은?
+  3. pairs() 산점도행렬로 큰 그림을 본다. 언뜻 눈에 띄는 이상한 점이나 흥미로운 점이 없는지 살펴본다.
+     행의 수가 너무 클 경우에는 sample_n() 함수로 표본화 한다. 변수의 수가 너무 큰 경우에는
+     10여개 이하의 데이터별로 살펴본다.
+  4. 주요 변수를 하나씩 살펴본다. 수량형 변수는 히스토그램, 범주형 변수는 막대그래프를 사용한다.
+     geom_histogram() 과 geom_bar() 함수를 이용한다.
+  5. 두 변수 간의 상관 관계를 살펴본다. 산점도나 상자그림을 사용한다.
+     geom_point()와 geom_boxplot() 함수를 이용한다.
+  6. 고차원의 관계를 연구한다. 제3, 제4의 변수를 geom_* 속성에 추가해본다.
+     적절할 경우에는 facet_wrap() 함수를 사용한다.
+  7. 양질의 의미 있는 결과를 얻을 때까지 위의 과정을 반복한다.
+  8. 의미 있는 플롯은 문서화한다. 플롯을 생성한 코드도 버전 관리한다.
+
+  ## 에드워드 터프티의 시각화의 합리적이고 유용한 원칙
+  1. 비교, 대조, 차이를 드러내라.
+  2. 인과 관계와 상관 관계를 보여라.
+  3. 한 도표에 여러 변수를 보여라. ggplot은 통합적으로 이것을 지원한다.
+  4. 텍스트, 숫자, 이미지, 그래프 같은 데이터들은 한 곳에 통합하라.
+  5. 사용된 데이터의 출처를 그래프 안이나 각주로 밝혀라.
+  6. 의미 있는 내용을 담아라.
+
+  1. 의미있는 변수명을 사용하라.
+    : 플롯의 x, y축 그리고 범례에 나타난 변수명이 의미 있는가?
+    x, y, z, var1, X1, X2 등의 이름은 의미가 없다. 적어도 gdpPercap, lifeExp 정도는 되어야 한다.
+    gdp_per_capita, life_expectancy 등으로 약어를 피하면 더 좋다.
+    외부 발표를 위해서라면 물론 더욱더 정식으로, 'GDP/Capita', 'Life Expectancy' 등으로 표현해야한다.
+    ggplot2은 기본적으로 입력 데이터 세트의 변수명을 바로 사용하므로 입력 데이터세트의 변수명을 의미있게
+    하는것이 바람직한 관행이다. 그렇지 않으면 xlab(), ylab(), labs() 등의 함수를 사용한다.
+  
+  2. 필요하면 제목을 추가하라.
+    : ggplot2는 기본적으로 제목을 붙이지 않는다. 만약 제목이 필요할 경우에는 ggtitle()을 사용한다.
+
+  3. 설명이 필요없는 플롯을 지향하라.
+    : 축에 적절한 변수명이 표시되고 필요한 제목이 붙어 있으면 차트 자체로 충분한 의미를 전달하게 된다. 
+    이것의 장점은 시각화를 생성한 컴퓨터 코드와 시각화 결과물 안에 모든 내용이 담겨있음을 의미한다.
+    그렇지 않으면 프리젠테이션에 별도의 문서로, 최악의 경우에는 시각화를 한 사람이나 발표자의 
+    머리 속에만 플롯의 의미가 담겨있게 된다.
+
+  4. 적절한 경우에 조그만 도표를 동시에 여러개 보여주는 'small multiple'을 활용하라.
+    : ggplot2에서는 facet_warp(), facet_grid()등의 명령을 이용한다.
+
+  5. 시각화 코드는 버전을 관리한다. 시각화되는ㄴ 데이터를 준비하는 코드도 함께 버전을 관리한다.
+
+  6. 모든 데이터를 반드시 시각화해보라.
+    : 데이터 과학의 초보자가 범하는 실수 중 하나가 시각화를 통해 데이터를 충분히 살펴보지 않고
+    모형을 적용하는 것이다. 모형화 전에 시각화를 하고, 모형의 결과는 시각화를 통해 전달한다.
+
+  7. 데이터 처리에 능숙해지도록 노력하라.
+    : 특히 dplyr 라이브러리를 익혀라. 효율적인 시각화의 70%는 데이터의 전처리라고 할 수 있다.
+    그룹별 요약 통계량 계산 등을 위해서는 dplyr를 능숙하게 다루는 것이 아주 유용하며, 
+    이것은 거의 필수적이다.
+    

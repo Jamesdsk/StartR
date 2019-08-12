@@ -1,0 +1,18 @@
+## 수면제 효과 데이터
+> y <- sleep$extra[sleep$group == 1]
+
+> sumary(y)
+> sd(y)
+
+> par(mfrow=c(2,2))
+> hist(y)
+> boxplot(y)
+> qqnorm(y); qqline(y)
+> hist(y, probe=TRUE)
+> lines(density(y), lty=2)
+
+> t.test(y)
+> t.test(y, alternative="greater")
+
+# 귀무가설 : 특징 없는, 가치 없는, 효과 없는 가설
+# 대립가설 : 변화 있음, 효과 있음, 차이 있음 등을 나타내는 가설
